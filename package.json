@@ -1,0 +1,20 @@
+{
+  "name": "vue-pie",
+  "version": "1.0.0",
+  "description": "Vue pie chart component built with d3",
+  "main": "build/vue-pie.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vue",
+    "pie",
+    "data",
+    "visualization",
+    "d3",
+    "chart",
+    "donut"
+  ],
+  "author": "Maddie Klein",
+  "license": "ISC"
+}
