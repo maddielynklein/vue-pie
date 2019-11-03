@@ -1,10 +1,14 @@
 <template>
-  <div :id="id + '-wrapper'" :class="{'chart-horizontal': ['right', 'left'].includes(legendLocation)}">
-    <div v-if="['left','top'].includes(legendLocation)" :id="this.id + '-legend'" class="legend"/>
+  <div :id="id + '-wrapper'" :class="{'vue-pie-chart-horizontal': ['right', 'left'].includes(legendLocation)}">
+    <div v-if="['left','top'].includes(legendLocation)" :id="this.id + '-legend'" class="vue-pie-legend">
+      <slot name="legend-label"></slot>
+    </div>
     <svg :width="actualWidth" :height="actualHeight" :id="id">
       <g :id="id + '-center'" :transform="'translate(' + (this.actualWidth / 2) + ',' + (this.actualHeight / 2) + ')'"/>
     </svg>
-    <div v-if="['right','bottom'].includes(legendLocation)" :id="this.id + '-legend'" class="legend"/>
+    <div v-if="['right','bottom'].includes(legendLocation)" :id="this.id + '-legend'" class="vue-pie-legend">
+      <slot name="legend-label"></slot>
+    </div>
   </div>
 </template>
 
@@ -129,6 +133,7 @@
       chartData() {
         var oldData = this.g.selectAll('path').data().map(e => e.data.data)
         var old = this.buildDataArray(oldData, this.sectionKeys)
+        this.clickedIndices = new Set()
         this.drawLegend()
         this.updateWidth()
         this.transitionData(
@@ -139,6 +144,7 @@
       sectionKeys() {
         var oldKeys = this.g.selectAll('path').data().map(e => e.data.key).filter(k => k != null)
         var old = this.buildDataArray(this.dataArray, oldKeys)
+        this.clickedIndices = new Set()
         this.drawLegend()
         this.updateWidth()
         this.transitionData(
@@ -196,7 +202,9 @@
     },
     methods: {
       updateWidth() {
-        var divSize = d3.select('div#' + this.id + '-wrapper').node().getBoundingClientRect()
+        var node = d3.select('div#' + this.id + '-wrapper').node()
+        if (!node) return
+        var divSize = node.getBoundingClientRect()
         var legendSize = {
           width: 0
         }
@@ -277,10 +285,11 @@
         return '<span style="color:' + this.selectColor(d,id) +'">' + id + '</span>'
       },
       drawLegend() {
-        d3.select('#' + this.id + '-legend').selectAll('div.legend-item')
+        d3.select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item')
           .data(this.dataArray)
           .enter().append('div')
-            .classed('legend-item', true)
+            .classed('vue-pie-legend-item', true)
+            .classed('vue-pie-clickable', (_,i) => this.canClick(i))
             .html((d) => this.formatLegend ? this.formatLegend(d.data, d.id) : this.defaultFormatLegend(d.data, d.id))
             .on('click', this.onClick)
           .exit().remove()
@@ -288,6 +297,7 @@
       transitionData(was, is) {
         this.g.selectAll('path').data(this.pie(was), (d) => d.data.id)
           .enter().append('path')
+            .classed('vue-pie-clickable', (_,i) => this.canClick(i))
             .attr('d', this.arc)
             .attr('fill', (d) => this.selectColor(d.data.data, d.data.index))
             .each(function (d) {
@@ -308,6 +318,7 @@
             .on('click', this.onClick)
 
         var paths = this.g.selectAll('path').data(this.pie(is), (d) => d.data.id)
+          .classed('vue-pie-clickable', (_,i) => this.canClick(i))
         var arc = this.arc
           
         paths.transition().duration(this.transitionDuration)
@@ -320,19 +331,21 @@
           })
       },
       transitionDisplay(hoverInd) {
-        this.g.selectAll('path').transition().duration(this.transitionDuration / 3)
-          .attr('opacity', ((_,i) => {
-            if (i == hoverInd || this.clickedIndices.has(i)) return 1
-            if (hoverInd == null && this.clickedIndices.size == 0) return 1
-            return 0.3
-          }).bind(this))
-          .attr('d', ((d,i) => {
-            if (i == hoverInd || this.clickedIndices.has(i)) return this.expandedArc(d)
-            return this.arc(d)
-          }).bind(this))
+        this.g.selectAll('path').classed('vue-pie-clickable', (_,i) => this.canClick(i))
+          .transition().duration(this.transitionDuration / 3)
+            .attr('opacity', ((_,i) => {
+              if (i == hoverInd || this.clickedIndices.has(i)) return 1
+              if (hoverInd == null && this.clickedIndices.size == 0) return 1
+              return 0.3
+            }).bind(this))
+            .attr('d', ((d,i) => {
+              if (i == hoverInd || this.clickedIndices.has(i)) return this.expandedArc(d)
+              return this.arc(d)
+            }).bind(this))
 
-        d3.select('#' + this.id + '-legend').selectAll('div.legend-item')
-          .classed('faded', ((_,i) => {
+        d3.select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item')
+          .classed('vue-pie-clickable', (_,i) => this.canClick(i))
+          .classed('vue-pie-faded', ((_,i) => {
             if (i == hoverInd || this.clickedIndices.has(i)) return false
             if (hoverInd == null && this.clickedIndices.size == 0) return false
             return true
@@ -343,14 +356,17 @@
 </script>
 
 <style>
-  .chart-horizontal {
+  .vue-pie-chart-horizontal {
     display: flex;
   }
-  .legend {
+  .vue-pie-legend {
     margin: auto;
     padding: 1em;
   }
-  .faded {
+  .vue-pie-clickable {
+    cursor: pointer;
+  }
+  .vue-pie-faded {
     opacity: 0.3;
   }
 </style>
