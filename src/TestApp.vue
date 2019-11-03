@@ -1,5 +1,6 @@
 <template>
-  <pie-chart legendLocation="left" :chartData="pie" :innerRadiusPercent="0.7" :endAngle="1.5 * Math.PI"/>
+  <pie-chart legendLocation="left" :chartData="pie" :innerRadiusPercent="0.7" :endAngle="1.5 * Math.PI"
+  :startAngle=".5 * Math.PI"/>
 </template>
 
 <script>
@@ -17,7 +18,7 @@
     },
     mounted() {
       setTimeout((() => {
-        // this.pie = [1,2,3,5]
+        // this.pie = [4,1,7]
         this.pie.push(5)
       }).bind(this),2000)
     }

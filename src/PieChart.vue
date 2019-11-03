@@ -101,14 +101,16 @@
       }
     },
     watch: {
-      chartData(_, oldData) {
+      chartData() {
+        var oldData = this.g.selectAll('path').data().map(e => e.data.data)
         var old = this.buildDataArray(oldData, this.sectionKeys)
         this.transitionData(
           this.mergeSecondIntoFirst(old, this.dataArray),
           this.mergeSecondIntoFirst(this.dataArray, old),
         )
       },
-      sectionKeys(_, oldKeys) {
+      sectionKeys() {
+        var oldKeys = this.g.selectAll('path').data().map(e => e.data.key).filter(k => k != null)
         var old = this.buildDataArray(this.dataArray, oldKeys)
         this.transitionData(
           this.mergeSecondIntoFirst(old, this.dataArray),
@@ -134,7 +136,7 @@
       },
       pie() {
         return d3.pie().value((d) => d.value).startAngle(this.startAngle).endAngle(this.endAngle)
-          .padAngle(this.padAngle)
+          .padAngle(this.padAngle).sortValues(null)
       },
       arc() {
         return d3.arc().outerRadius(this.outerRadius).innerRadius(this.innerRadius)
@@ -182,7 +184,7 @@
           return {
             data: data[k],
             value: this.selectValue(data[k],k),
-            id: null,
+            id: k,
             key: k
           }
         })
@@ -211,10 +213,11 @@
             })
           }
         })
-        return this.sort ? merged.sort((a,b) => this.sort(a.key != null ? a.key : a.data, b.key != null ? b.key : b.data)): merged
+        if (this.sort) merged.sort((a,b) => this.sort(a.key != null ? a.key : a.data, b.key != null ? b.key : b.data))
+        return merged
       },
       transitionData(was, is) {
-        this.g.selectAll('path').data(this.pie(was), (d) => d.data.key ? d.data.key : d.data.id)
+        this.g.selectAll('path').data(this.pie(was), (d) => d.data.id)
           .enter().append('path')
             .attr('d', this.arc)
             .attr('fill', (d) => this.selectColor(d.data.data, d.data.index))
@@ -222,7 +225,7 @@
               this._current = d
             })
 
-        var paths = this.g.selectAll('path').data(this.pie(is))
+        var paths = this.g.selectAll('path').data(this.pie(is), (d) => d.data.id)
         var arc = this.arc
           
         paths.transition().duration(this.transitionDuration)
