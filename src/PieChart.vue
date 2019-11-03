@@ -54,16 +54,10 @@
       },
       startAngle: {
         type: Number,
-        validator (v) {
-          return !v || (v >= 0 && v < 2 * Math.PI)
-        },
         default: 0
       },
       endAngle: {
         type: Number,
-        validator (v) {
-          return !v || (v > 0 && v <= 2 * Math.PI)
-        },
         default: 2 * Math.PI
       },
       padAngle: {

@@ -1,6 +1,6 @@
 <template>
   <pie-chart legendLocation="left" :chartData="pie" :innerRadiusPercent="0.7" :endAngle="1.5 * Math.PI"
-  :startAngle=".5 * Math.PI"/>
+  :startAngle="-.5 * Math.PI"/>
 </template>
 
 <script>
