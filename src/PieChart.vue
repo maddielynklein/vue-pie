@@ -278,15 +278,15 @@
       },
       transitionDisplay(hoverInd) {
         this.g.selectAll('path').transition().duration(this.transitionDuration / 3)
-          .attr('opacity', (_,i) => {
+          .attr('opacity', ((_,i) => {
             if (i == hoverInd || this.clickedIndices.has(i)) return 1
-            if (!hoverInd && this.clickedIndices.size == 0) return 1
+            if (hoverInd == null && this.clickedIndices.size == 0) return 1
             return 0.3
-          })
-          .attr('d', (d,i) => {
+          }).bind(this))
+          .attr('d', ((d,i) => {
             if (i == hoverInd || this.clickedIndices.has(i)) return this.expandedArc(d)
             return this.arc(d)
-          })
+          }).bind(this))
       },
     }
   }

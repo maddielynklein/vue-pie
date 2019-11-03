@@ -1,6 +1,6 @@
 <template>
   <pie-chart legendLocation="left" :chartData="pie" :innerRadiusPercent="0.7" :endAngle="1.5 * Math.PI"
-  :startAngle="-.5 * Math.PI" :hoverAnimation="true" :maxSelectedSections="2"/>
+  :startAngle="-.5 * Math.PI" :hoverAnimation="true" :maxSelectedSections="2" />
 </template>
 
 <script>
