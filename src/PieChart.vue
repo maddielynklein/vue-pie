@@ -103,6 +103,10 @@
         this.mergeSecondIntoFirst([], this.dataArray),
         this.mergeSecondIntoFirst(this.dataArray, []),
       )
+      window.addEventListener('resize', () => {
+        this.updateWidth()
+        this.transitionDisplay()
+      })
     },
     data () {
       return {
@@ -246,20 +250,28 @@
             .each(function (d) {
               this._current = d
             })
-            .on('mouseover', ((_,i) => {
+            .on('mouseover', ((d,i) => {
               if (this.canHover()) {
                 this.transitionDisplay(i)
+                this.$emit('hover', d.data.id)
               }
             }).bind(this))
             .on('mouseout', (() => {
               if (this.canHover()) {
                 this.transitionDisplay()
+                this.$emit('hover')
               }
             }).bind(this))
-            .on('click', ((_,i) => {
+            .on('click', ((d,i) => {
               if (this.canClick(i)) {
-                if (this.clickedIndices.has(i)) this.clickedIndices.delete(i)
-                else this.clickedIndices.add(i)
+                if (this.clickedIndices.has(i)) {
+                  this.clickedIndices.delete(i)
+                  this.$emit('unselected', d.data.id)
+                }
+                else {
+                  this.clickedIndices.add(i)
+                  this.$emit('selected', d.data.id)
+                }
                 this.transitionDisplay()
               }
             }).bind(this))
