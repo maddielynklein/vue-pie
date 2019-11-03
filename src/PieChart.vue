@@ -3,6 +3,9 @@
     <svg :width="actualWidth" :height="actualHeight" :id="id">
       <g :id="id + '-center'" :transform="'translate(' + (this.actualWidth / 2) + ',' + (this.actualHeight / 2) + ')'"/>
     </svg>
+    <div>
+      
+    </div>
   </div>
 </template>
 
@@ -76,6 +79,21 @@
         validator (v) {
           return !v || ['left','right','top','bottom'].includes(v)
         }
+      },
+      hoverAnimation: {
+        type: Boolean,
+        default: false
+      },
+      maxSelectedSections: {
+        type: Number,
+        default: 0
+      },
+      selectedSectionIncreasePercent: {
+        type: Number,
+        validator (v) {
+          return v >= 0 && v < 1
+        },
+        default: 0.1
       }
     },
     mounted() {
@@ -92,6 +110,7 @@
         chartWidth: 0,
         chartHeight: 0,
         g: null,
+        clickedIndices: new Set()
       }
     },
     watch: {
@@ -135,6 +154,9 @@
       arc() {
         return d3.arc().outerRadius(this.outerRadius).innerRadius(this.innerRadius)
       },
+      expandedArc() {
+        return d3.arc().outerRadius(this.outerRadius / (1 - this.selectedSectionIncreasePercent)).innerRadius(this.innerRadius)
+      },
       actualWidth() {
         return Math.max(this.width, this.chartWidth)
       },
@@ -145,17 +167,16 @@
         return Math.max(this.actualWidth, this.actualHeight) / 2
       },
       outerRadius() {
-        if (this.hasInteraction) return 0.8 * this.radius
+        if (this.hasInteraction) return (1 - this.selectedSectionIncreasePercent) * this.radius
         return this.radius
       },
       innerRadius() {
-        if (this.hasInteraction) return 0.8 * this.innerRadiusPercent * this.radius
-        return 0
+        if (this.hasInteraction) return (1 - this.selectedSectionIncreasePercent) * this.innerRadiusPercent * this.radius
+        return this.innerRadiusPercent * this.radius
       },
       hasInteraction() {
-        // TODO
-        return true
-      },
+        return this.hoverAnimation || this.maxSelectedSections != 0
+      }
     },
     methods: {
       updateWidth() {
@@ -207,8 +228,15 @@
             })
           }
         })
-        if (this.sort) merged.sort((a,b) => this.sort(a.key != null ? a.key : a.data, b.key != null ? b.key : b.data))
+        if (this.sort) merged.sort((a,b) => this.sort(a.id, b.id))
         return merged
+      },
+      canHover() {
+        return this.hoverAnimation && (this.maxSelectedSections == 0 || this.clickedIndices.size == 0)
+      },
+      canClick(i) {
+        return this.maxSelectedSections == null ||
+          (this.maxSelectedSections != 0 && (this.clickedIndices.size < this.maxSelectedSections || this.clickedIndices.has(i)))
       },
       transitionData(was, is) {
         this.g.selectAll('path').data(this.pie(was), (d) => d.data.id)
@@ -218,6 +246,23 @@
             .each(function (d) {
               this._current = d
             })
+            .on('mouseover', ((_,i) => {
+              if (this.canHover()) {
+                this.transitionDisplay(i)
+              }
+            }).bind(this))
+            .on('mouseout', (() => {
+              if (this.canHover()) {
+                this.transitionDisplay()
+              }
+            }).bind(this))
+            .on('click', ((_,i) => {
+              if (this.canClick(i)) {
+                if (this.clickedIndices.has(i)) this.clickedIndices.delete(i)
+                else this.clickedIndices.add(i)
+                this.transitionDisplay()
+              }
+            }).bind(this))
 
         var paths = this.g.selectAll('path').data(this.pie(is), (d) => d.data.id)
         var arc = this.arc
@@ -229,6 +274,18 @@
             return function(t) {
               return arc(i(t))
             }
+          })
+      },
+      transitionDisplay(hoverInd) {
+        this.g.selectAll('path').transition().duration(this.transitionDuration / 3)
+          .attr('opacity', (_,i) => {
+            if (i == hoverInd || this.clickedIndices.has(i)) return 1
+            if (!hoverInd && this.clickedIndices.size == 0) return 1
+            return 0.3
+          })
+          .attr('d', (d,i) => {
+            if (i == hoverInd || this.clickedIndices.has(i)) return this.expandedArc(d)
+            return this.arc(d)
           })
       },
     }
