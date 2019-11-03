@@ -1,11 +1,10 @@
 <template>
-  <div :id="id + '-wrapper'">
+  <div :id="id + '-wrapper'" :class="{'chart-horizontal': ['right', 'left'].includes(legendLocation)}">
+    <div v-if="['left','top'].includes(legendLocation)" :id="this.id + '-legend'" class="legend"/>
     <svg :width="actualWidth" :height="actualHeight" :id="id">
       <g :id="id + '-center'" :transform="'translate(' + (this.actualWidth / 2) + ',' + (this.actualHeight / 2) + ')'"/>
     </svg>
-    <div>
-      
-    </div>
+    <div v-if="['right','bottom'].includes(legendLocation)" :id="this.id + '-legend'" class="legend"/>
   </div>
 </template>
 
@@ -80,6 +79,9 @@
           return !v || ['left','right','top','bottom'].includes(v)
         }
       },
+      formatLegend: {
+        type: Function,
+      },
       hoverAnimation: {
         type: Boolean,
         default: false
@@ -98,6 +100,7 @@
     },
     mounted() {
       this.g = d3.select('g#' + this.id + '-center')
+      this.drawLegend()
       this.updateWidth()
       this.transitionData(
         this.mergeSecondIntoFirst([], this.dataArray),
@@ -118,9 +121,16 @@
       }
     },
     watch: {
+      legendLocation() {
+        this.drawLegend()
+        this.updateWidth()
+        this.transitionDisplay()
+      },
       chartData() {
         var oldData = this.g.selectAll('path').data().map(e => e.data.data)
         var old = this.buildDataArray(oldData, this.sectionKeys)
+        this.drawLegend()
+        this.updateWidth()
         this.transitionData(
           this.mergeSecondIntoFirst(old, this.dataArray),
           this.mergeSecondIntoFirst(this.dataArray, old),
@@ -129,6 +139,8 @@
       sectionKeys() {
         var oldKeys = this.g.selectAll('path').data().map(e => e.data.key).filter(k => k != null)
         var old = this.buildDataArray(this.dataArray, oldKeys)
+        this.drawLegend()
+        this.updateWidth()
         this.transitionData(
           this.mergeSecondIntoFirst(old, this.dataArray),
           this.mergeSecondIntoFirst(this.dataArray, old),
@@ -185,8 +197,14 @@
     methods: {
       updateWidth() {
         var divSize = d3.select('div#' + this.id + '-wrapper').node().getBoundingClientRect()
-        this.chartWidth = divSize.width
-        this.chartHeight = divSize.width
+        var legendSize = {
+          width: 0
+        }
+        if (['left','right'].includes(this.legendLocation)){
+          legendSize = d3.select('div#' + this.id + '-legend').node().getBoundingClientRect()
+        }
+        this.chartWidth = divSize.width - legendSize.width
+        this.chartHeight = divSize.width- legendSize.width
       },
       buildDataArray(data, keys) {
         if (Array.isArray(data)) {
@@ -242,6 +260,31 @@
         return this.maxSelectedSections == null ||
           (this.maxSelectedSections != 0 && (this.clickedIndices.size < this.maxSelectedSections || this.clickedIndices.has(i)))
       },
+      onClick(d,i) {
+        if (this.canClick(i)) {
+          if (this.clickedIndices.has(i)) {
+            this.clickedIndices.delete(i)
+            this.$emit('unselected', d.data.id)
+          }
+          else {
+            this.clickedIndices.add(i)
+            this.$emit('selected', d.data.id)
+          }
+          this.transitionDisplay()
+        }
+      },
+      defaultFormatLegend(d,id) {
+        return '<span style="color:' + this.selectColor(d,id) +'">' + id + '</span>'
+      },
+      drawLegend() {
+        d3.select('#' + this.id + '-legend').selectAll('div.legend-item')
+          .data(this.dataArray)
+          .enter().append('div')
+            .classed('legend-item', true)
+            .html((d) => this.formatLegend ? this.formatLegend(d.data, d.id) : this.defaultFormatLegend(d.data, d.id))
+            .on('click', this.onClick)
+          .exit().remove()
+      },
       transitionData(was, is) {
         this.g.selectAll('path').data(this.pie(was), (d) => d.data.id)
           .enter().append('path')
@@ -262,19 +305,7 @@
                 this.$emit('hover')
               }
             }).bind(this))
-            .on('click', ((d,i) => {
-              if (this.canClick(i)) {
-                if (this.clickedIndices.has(i)) {
-                  this.clickedIndices.delete(i)
-                  this.$emit('unselected', d.data.id)
-                }
-                else {
-                  this.clickedIndices.add(i)
-                  this.$emit('selected', d.data.id)
-                }
-                this.transitionDisplay()
-              }
-            }).bind(this))
+            .on('click', this.onClick)
 
         var paths = this.g.selectAll('path').data(this.pie(is), (d) => d.data.id)
         var arc = this.arc
@@ -299,7 +330,27 @@
             if (i == hoverInd || this.clickedIndices.has(i)) return this.expandedArc(d)
             return this.arc(d)
           }).bind(this))
+
+        d3.select('#' + this.id + '-legend').selectAll('div.legend-item')
+          .classed('faded', ((_,i) => {
+            if (i == hoverInd || this.clickedIndices.has(i)) return false
+            if (hoverInd == null && this.clickedIndices.size == 0) return false
+            return true
+          }).bind(this))
       },
     }
   }
 </script>
+
+<style>
+  .chart-horizontal {
+    display: flex;
+  }
+  .legend {
+    margin: auto;
+    padding: 1em;
+  }
+  .faded {
+    opacity: 0.3;
+  }
+</style>
