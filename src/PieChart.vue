@@ -42,7 +42,6 @@
       },
       selectColor: {
         type: Function,
-        default: (_,i) => d3.schemeCategory10[i % 10]
       },
       selectIdentifier: {
         type: Function,
@@ -121,12 +120,24 @@
         chartWidth: 0,
         chartHeight: 0,
         g: null,
-        clickedIndices: new Set()
+        clickedIndices: new Set(),
+        legendSize: {
+          width: 0,
+          heigh: 0
+        }
       }
     },
     watch: {
       legendLocation() {
         this.drawLegend()
+        this.updateWidth()
+        this.transitionDisplay()
+      },
+      width() {
+        this.updateWidth()
+        this.transitionDisplay()
+      },
+      height() {
         this.updateWidth()
         this.transitionDisplay()
       },
@@ -180,7 +191,7 @@
         return d3.arc().outerRadius(this.outerRadius / (1 - this.selectedSectionIncreasePercent)).innerRadius(this.innerRadius)
       },
       actualWidth() {
-        return Math.max(this.width, this.chartWidth)
+        return Math.max(this.width - this.legendSize.width, this.chartWidth)
       },
       actualHeight() {
         return Math.max(this.height, this.chartHeight)
@@ -196,6 +207,9 @@
         if (this.hasInteraction) return (1 - this.selectedSectionIncreasePercent) * this.innerRadiusPercent * this.radius
         return this.innerRadiusPercent * this.radius
       },
+      colorFunc() {
+        return this.selectColor ? this.selectColor : this.defaultSelectColor
+      },
       hasInteraction() {
         return this.hoverAnimation || this.maxSelectedSections != 0
       }
@@ -205,12 +219,11 @@
         var node = d3.select('div#' + this.id + '-wrapper').node()
         if (!node) return
         var divSize = node.getBoundingClientRect()
-        var legendSize = {
-          width: 0
-        }
+        var legendSize = { width: 0 }
         if (['left','right'].includes(this.legendLocation)){
           legendSize = d3.select('div#' + this.id + '-legend').node().getBoundingClientRect()
-        }
+          this.legendSize.width = legendSize.width
+        } else this.legendSize.width = 0
         this.chartWidth = divSize.width - legendSize.width
         this.chartHeight = divSize.width- legendSize.width
       },
@@ -219,7 +232,7 @@
           return data.map((d,i) => {
             return {
               data: d,
-              value: this.selectValue(d,i),
+              value: this.selectValue(d,this.selectIdentifier(d,i)),
               id: this.selectIdentifier(d,i),
               key: null
             }
@@ -282,9 +295,15 @@
         }
       },
       defaultFormatLegend(d,id) {
-        return '<span style="color:' + this.selectColor(d,id) +'">' + id + '</span>'
+        return '<span><span style="color:' + this.colorFunc(d,id) + '">'
+          + id + '</span><span style="float:right">' + this.selectValue(d,id) + '</span></span>'
+      },
+      defaultSelectColor(_,id) {
+        var i = this.dataArray.findIndex(e => e.id == id)
+        return d3.schemeCategory10[i % 10]
       },
       drawLegend() {
+        d3.select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item').remove()
         d3.select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item')
           .data(this.dataArray)
           .enter().append('div')
@@ -292,14 +311,13 @@
             .classed('vue-pie-clickable', (_,i) => this.canClick(i))
             .html((d) => this.formatLegend ? this.formatLegend(d.data, d.id) : this.defaultFormatLegend(d.data, d.id))
             .on('click', this.onClick)
-          .exit().remove()
       },
       transitionData(was, is) {
         this.g.selectAll('path').data(this.pie(was), (d) => d.data.id)
           .enter().append('path')
             .classed('vue-pie-clickable', (_,i) => this.canClick(i))
             .attr('d', this.arc)
-            .attr('fill', (d) => this.selectColor(d.data.data, d.data.index))
+            .attr('fill', (d) => this.colorFunc(d.data.data, d.data.id))
             .each(function (d) {
               this._current = d
             })
@@ -361,7 +379,10 @@
   }
   .vue-pie-legend {
     margin: auto;
-    padding: 1em;
+    padding: 0.5em;
+  }
+  .vue-pie-legend-item span {
+    margin: 0 0.25em;
   }
   .vue-pie-clickable {
     cursor: pointer;

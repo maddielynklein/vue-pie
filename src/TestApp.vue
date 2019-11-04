@@ -1,7 +1,7 @@
 <template>
-  <div style="width: 45%">
+  <div style="width: 75%">
     <pie-chart legendLocation="left" :chartData="pie" :innerRadiusPercent="0.7" :endAngle="1.5 * Math.PI"
-    :startAngle="-.5 * Math.PI" :hoverAnimation="true" :maxSelectedSections="2" />
+    :startAngle="-.5 * Math.PI" :hoverAnimation="true" :maxSelectedSections="2" :selectIdentifier="(d,i) => ['First','Second','Third','Fourth'][i]"/>
   </div>
 </template>
 
