@@ -1,5 +1,5 @@
 {
-  "name": "vue-pie",
+  "name": "vpie",
   "version": "1.0.0",
   "description": "Vue pie chart component built with d3",
   "main": "dist/vue-pie.min.js",
@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "npm-prod": "node_modules/webpack/bin/webpack.js --progress --config build/webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -28,15 +29,16 @@
     "d3": "^5.12.0"
   },
   "devDependencies": {
-    "core-js": "^2.6.5",
-    "vue": "^2.6.10",
     "@vue/cli-plugin-babel": "^3.12.0",
     "@vue/cli-plugin-eslint": "^3.12.0",
     "@vue/cli-service": "^3.12.0",
     "babel-eslint": "^10.0.1",
+    "core-js": "^2.6.5",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
-    "vue-template-compiler": "^2.6.10"
+    "vue": "^2.6.10",
+    "vue-template-compiler": "^2.6.10",
+    "webpack-cli": "^3.3.10"
   },
   "eslintConfig": {
     "root": true,

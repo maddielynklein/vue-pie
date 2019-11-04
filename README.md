@@ -2,7 +2,7 @@
 
 ## Add to project
 ```
-npm install vue-pie
+npm install vpie
 ```
 
 ## Description
