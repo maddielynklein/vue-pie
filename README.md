@@ -46,7 +46,7 @@ The data element passed to functions is either the array element from the chartD
 
 ## Examples
 <div style="display: flex;flex-wrap: wrap;">
-<pre width="50%">
+<pre width="50%"><code>
 <pie-chart
   :chartData="{
     a: {
@@ -83,7 +83,7 @@ The data element passed to functions is either the array element from the chartD
   :formatLegend="(d) => d.label"
   :maxSelectedSections="1"
 />
-</pre>
+</code></pre>
 <img src="demo/html-demo.png" alt="Pie" width="350"/>
 </div>
 <div style="display: flex;flex-wrap: wrap;">
