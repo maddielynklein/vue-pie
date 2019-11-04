@@ -7,6 +7,7 @@ npm install vue-pie
 
 ## Description
 Vue pie chart component built with d3
+<img src="demo/html-demo.png" alt="Pie" width="500"/>
 
 ## Project Dependencies
 d3
@@ -46,7 +47,19 @@ The data element passed to functions is either the array element from the chartD
 
 ## Examples
 <div style="display: flex;flex-wrap: wrap;">
-  
+  <img src="demo/pie.png" alt="Pie" width="350"/>
+
+  <img src="demo/basic.gif" alt="Basic" width="350"/>
+
+  <img src="demo/hover.gif" alt="Hover" width="350"/>
+
+  <img src="demo/click.gif" alt="Click" width="350"/>
+
+  <img src="demo/timer.gif" alt="Timer" width="350"/>
+
+  <img src="demo/spinner.gif" alt="Spinner" width="350"/>
+</div>
+
 ````html
 <pie-chart
   :chartData="{
@@ -85,18 +98,3 @@ The data element passed to functions is either the array element from the chartD
   :maxSelectedSections="1"
 />
 ````
-<img src="demo/html-demo.png" alt="Pie" width="350"/>
-</div>
-<div style="display: flex;flex-wrap: wrap;">
-  <img src="demo/pie.png" alt="Pie" width="350"/>
-
-  <img src="demo/basic.gif" alt="Basic" width="350"/>
-
-  <img src="demo/hover.gif" alt="Hover" width="350"/>
-
-  <img src="demo/click.gif" alt="Click" width="350"/>
-
-  <img src="demo/timer.gif" alt="Timer" width="350"/>
-
-  <img src="demo/spinner.gif" alt="Spinner" width="350"/>
-</div>
