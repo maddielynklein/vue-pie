@@ -9,7 +9,7 @@ npm install vue-pie
 Vue pie chart component built with d3
 
 ## Project Dependencies
-d4
+d3
 
 ## Props
 | Prop | Required | Description | Default |
@@ -17,7 +17,7 @@ d4
 
 
 ## Examples
-![Pie](demo/pie.png)
+![Pie](demo/pie.png =250x)
 
 ![Basic](demo/basic.gif)
 
