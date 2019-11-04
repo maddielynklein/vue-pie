@@ -17,7 +17,7 @@ d3
 
 
 ## Examples
-![Pie](demo/pie.png =250x)
+<img src="demo/pie.png" alt="Pie" width="100"/>
 
 ![Basic](demo/basic.gif)
 
