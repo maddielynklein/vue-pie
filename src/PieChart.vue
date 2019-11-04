@@ -124,7 +124,7 @@
         chartWidth: 0,
         chartHeight: 0,
         g: null,
-        clickedIndices: new Set(),
+        clickedIndices: [],
         legendSize: {
           width: 0,
           heigh: 0
@@ -148,7 +148,7 @@
       chartData() {
         var oldData = this.g.selectAll('path').data().map(e => e.data.data)
         var old = this.buildDataArray(oldData, this.sectionKeys)
-        this.clickedIndices = new Set()
+        this.clickedIndices = []
         this.drawLegend()
         this.updateWidth()
         this.transitionData(
@@ -159,7 +159,7 @@
       sectionKeys() {
         var oldKeys = this.g.selectAll('path').data().map(e => e.data.key).filter(k => k != null)
         var old = this.buildDataArray(this.dataArray, oldKeys)
-        this.clickedIndices = new Set()
+        this.clickedIndices = []
         this.drawLegend()
         this.updateWidth()
         this.transitionData(
@@ -279,20 +279,23 @@
         return merged
       },
       canHover() {
-        return this.hoverAnimation && (this.maxSelectedSections == 0 || this.clickedIndices.size == 0)
+        return this.hoverAnimation && (this.maxSelectedSections == 0 || this.clickedIndices.length == 0)
       },
-      canClick(i) {
-        return this.maxSelectedSections == null ||
-          (this.maxSelectedSections != 0 && (this.clickedIndices.size < this.maxSelectedSections || this.clickedIndices.has(i)))
+      canClick() {
+        return this.maxSelectedSections != 0
       },
-      onClick(d,i) {
-        if (this.canClick(i)) {
-          if (this.clickedIndices.has(i)) {
-            this.clickedIndices.delete(i)
+      onClick(d) {
+        if (this.canClick()) {
+          var index = this.clickedIndices.indexOf(d.data.id)
+          if (index > -1) {
+            this.clickedIndices.splice(index, 1)
             this.$emit('unselected', d.data.id)
           }
           else {
-            this.clickedIndices.add(i)
+            if (this.clickedIndices.length == this.maxSelectedSections) {
+              this.$emit('unselected', this.clickedIndices.splice(0, 1))
+            }
+            this.clickedIndices.push(d.data.id)
             this.$emit('selected', d.data.id)
           }
           this.transitionDisplay()
@@ -312,14 +315,15 @@
           .data(this.dataArray)
           .enter().append('div')
             .classed('vue-pie-legend-item', true)
-            .classed('vue-pie-clickable', (_,i) => this.canClick(i))
+            .classed('vue-pie-clickable', this.canClick)
             .html((d) => this.formatLegendHtml ? this.formatLegendHtml(d.data, d.id) : this.defaultFormatLegendHtml(d.data, d.id))
             .on('click', this.onClick)
       },
       transitionData(was, is) {
         this.g.selectAll('path').data(this.pie(was), (d) => d.data.id)
           .enter().append('path')
-            .classed('vue-pie-clickable', (_,i) => this.canClick(i))
+            .classed('vue-pie-clickable', this.canClick)
+            .attr('opacity', 1)
             .attr('d', this.arc)
             .attr('fill', (d) => this.colorFunc(d.data.data, d.data.id))
             .each(function (d) {
@@ -340,7 +344,7 @@
             .on('click', this.onClick)
 
         var paths = this.g.selectAll('path').data(this.pie(is), (d) => d.data.id)
-          .classed('vue-pie-clickable', (_,i) => this.canClick(i))
+          .classed('vue-pie-clickable', this.canClick)
         var arc = this.arc
           
         paths.transition().duration(this.transitionDuration)
@@ -353,23 +357,23 @@
           })
       },
       transitionDisplay(hoverInd) {
-        this.g.selectAll('path').classed('vue-pie-clickable', (_,i) => this.canClick(i))
+        this.g.selectAll('path').classed('vue-pie-clickable', this.canClick)
           .transition().duration(this.transitionDuration / 3)
-            .attr('opacity', ((_,i) => {
-              if (i == hoverInd || this.clickedIndices.has(i)) return 1
-              if (hoverInd == null && ((this.maxSelectedSections != 0 && this.clickedIndices.size == 0) || this.maxSelectedSections == 0)) return 1
+            .attr('opacity', ((d,i) => {
+              if (i == hoverInd || this.clickedIndices.includes(d.data.id)) return 1
+              if (hoverInd == null && ((this.maxSelectedSections != 0 && this.clickedIndices.length == 0) || this.maxSelectedSections == 0)) return 1
               return 0.3
             }).bind(this))
             .attr('d', ((d,i) => {
-              if (i == hoverInd || this.clickedIndices.has(i)) return this.expandedArc(d)
+              if (i == hoverInd || this.clickedIndices.includes(d.data.id)) return this.expandedArc(d)
               return this.arc(d)
             }).bind(this))
 
         d3.select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item')
-          .classed('vue-pie-clickable', (_,i) => this.canClick(i))
-          .classed('vue-pie-faded', ((_,i) => {
-            if (i == hoverInd || this.clickedIndices.has(i)) return false
-            if (hoverInd == null && ((this.maxSelectedSections != 0 && this.clickedIndices.size == 0) || this.maxSelectedSections == 0)) return false
+          .classed('vue-pie-clickable', this.canClick)
+          .classed('vue-pie-faded', ((d,i) => {
+            if (i == hoverInd || this.clickedIndices.includes(d.data.id)) return false
+            if (hoverInd == null && ((this.maxSelectedSections != 0 && this.clickedIndices.length == 0) || this.maxSelectedSections == 0)) return false
             return true
           }).bind(this))
       },

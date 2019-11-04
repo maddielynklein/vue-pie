@@ -36,7 +36,7 @@
       :innerRadiusPercent="0.3"
       legendLocation="left"
       :formatLegend="(d) => d.label"
-      :maxSelectedSections="1"
+      :maxSelectedSections="2"
     />
     <!-- <pie-chart :chartData="pie" /> -->
     <!-- <pie-chart :chartData="{a:3,b:9,c:2,d:6,e:4}" :sectionKeys="['a','b','c','d','e']" :innerRadiusPercent="0.6"
