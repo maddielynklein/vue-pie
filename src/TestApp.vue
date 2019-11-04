@@ -1,8 +1,8 @@
 <template>
   <div style="width: 75%;margin: 4em">
-     <!-- <pie-chart legendLocation="left" :chartData="pie" :innerRadiusPercent="0.7" :endAngle="1.5 * Math.PI"
-    :startAngle="-.5 * Math.PI" :hoverAnimation="true" :maxSelectedSections="2" :selectIdentifier="(d,i) => ['First','Second','Third','Fourth'][i]"/> -->
-    <pie-chart :chartData="pie" />
+     <pie-chart legendLocation="top" :chartData="pie" :innerRadiusPercent="0.7" :endAngle="1.5 * Math.PI"
+    :startAngle="-.5 * Math.PI" :hoverAnimation="true" :maxSelectedSections="2" :selectIdentifier="(d,i) => ['First','Second','Third','Fourth'][i]"/>
+    <!-- <pie-chart :chartData="pie" /> -->
     <!-- <pie-chart :chartData="{a:3,b:9,c:2,d:6,e:4}" :sectionKeys="['a','b','c','d','e']" :innerRadiusPercent="0.6"
     legendLocation="right" :formatLegend="(_,id) => 'Section ' + id.toUpperCase()" :hoverAnimation="true"
     :selectColor="scheme3"/> -->
