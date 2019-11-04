@@ -82,8 +82,12 @@
           return !v || ['left','right','top','bottom'].includes(v)
         }
       },
+      formatLegendHtml: {
+        type: Function,
+      },
       formatLegend: {
         type: Function,
+        default: (_,id) => id
       },
       hoverAnimation: {
         type: Boolean,
@@ -294,9 +298,9 @@
           this.transitionDisplay()
         }
       },
-      defaultFormatLegend(d,id) {
+      defaultFormatLegendHtml(d,id) {
         return '<span><span style="color:' + this.colorFunc(d,id) + '">'
-          + id + '</span><span style="float:right">' + this.selectValue(d,id) + '</span></span>'
+          + this.formatLegend(d,id) + '</span><span style="float:right">' + this.selectValue(d,id) + '</span></span>'
       },
       defaultSelectColor(_,id) {
         var i = this.dataArray.findIndex(e => e.id == id)
@@ -309,7 +313,7 @@
           .enter().append('div')
             .classed('vue-pie-legend-item', true)
             .classed('vue-pie-clickable', (_,i) => this.canClick(i))
-            .html((d) => this.formatLegend ? this.formatLegend(d.data, d.id) : this.defaultFormatLegend(d.data, d.id))
+            .html((d) => this.formatLegendHtml ? this.formatLegendHtml(d.data, d.id) : this.defaultFormatLegendHtml(d.data, d.id))
             .on('click', this.onClick)
       },
       transitionData(was, is) {
@@ -353,7 +357,7 @@
           .transition().duration(this.transitionDuration / 3)
             .attr('opacity', ((_,i) => {
               if (i == hoverInd || this.clickedIndices.has(i)) return 1
-              if (hoverInd == null && this.clickedIndices.size == 0) return 1
+              if (hoverInd == null && ((this.maxSelectedSections != 0 && this.clickedIndices.size == 0) || this.maxSelectedSections == 0)) return 1
               return 0.3
             }).bind(this))
             .attr('d', ((d,i) => {
@@ -365,7 +369,7 @@
           .classed('vue-pie-clickable', (_,i) => this.canClick(i))
           .classed('vue-pie-faded', ((_,i) => {
             if (i == hoverInd || this.clickedIndices.has(i)) return false
-            if (hoverInd == null && this.clickedIndices.size == 0) return false
+            if (hoverInd == null && ((this.maxSelectedSections != 0 && this.clickedIndices.size == 0) || this.maxSelectedSections == 0)) return false
             return true
           }).bind(this))
       },
