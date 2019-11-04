@@ -20,7 +20,7 @@ The data element passed to functions is either the array element from the chartD
 | Height | No | Number | Height of pie and legend | Container width (to make a square) |
 | chartData | Yes | Array or Object | The pie data. If it is an array then each element is its own section. If it's an object then the sectionKeys array will determine the sections. | |
 | sectionKeys | No | Array | If the chartData is an object then this should be an array of which of it's properties should be sections. | [] |
-| selectValue | No | Function | This function is used to pull the value that is being displayed by the pie chart. It receives the data element and the id and should return a numeric value. |  Returns the data element. (d) => d |
+| selectValue | No | Function | This function is used to pull the value that is being displayed by the pie chart. It receives the data element and the id and should return a numeric value. |  <span>Returns the data element.<br/> (d) => d</span> |
 
 ## Events
 | Name | Arguments | Description |
