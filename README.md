@@ -17,14 +17,14 @@ d3
 
 
 ## Examples
-<img src="demo/pie.png" alt="Pie" width="100"/>
+<img src="demo/pie.png" alt="Pie" width="350"/>
 
-![Basic](demo/basic.gif)
+<img src="demo/basic.gif" alt="Basic" width="350"/>
 
-![Hover](demo/hover.gif)
+<img src="demo/hover.gif" alt="Hover" width="350"/>
 
-![Click](demo/click.gif)
+<img src="demo/click.gif" alt="Click" width="350"/>
 
-![Timer](demo/timer.gif)
+<img src="demo/timer.gif" alt="Timer" width="350"/>
 
-![Spinner](demo/spinner.gif)
+<img src="demo/spinner.gif" alt="Spinner" width="350"/>
