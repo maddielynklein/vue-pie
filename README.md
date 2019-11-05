@@ -10,7 +10,7 @@ Vue pie chart component built with d3
 <img src="demo/html-demo.png" alt="Pie" width="500"/>
 
 ## Project Dependencies
-d3
+d3-shape, d3-selection, d3-interpolate, d3-scale-chromatic, d3-transition
 
 ## Props
 The data element passed to functions is either the array element from the chartData or the property value of the chartData for the sectionKey. The id passed to functions is the sectionKey or the value returned from the selectIdentifier function.

@@ -13,7 +13,11 @@
 </template>
 
 <script>
-  import * as d3 from 'd3'
+  import {pie as d3pie, arc as d3arc} from 'd3-shape'
+  import {select as d3select} from 'd3-selection'
+  import {interpolate as d3interpolate} from 'd3-interpolate'
+  import {schemeCategory10 as d3schemeCategory10} from 'd3-scale-chromatic'
+  import {transition} from 'd3-transition'
   export default {
     name: 'PieChart',
     props: {
@@ -106,7 +110,7 @@
       }
     },
     mounted() {
-      this.g = d3.select('g#' + this.id + '-center')
+      this.g = d3select('g#' + this.id + '-center')
       this.drawLegend()
       this.updateWidth()
       this.transitionData(
@@ -185,14 +189,14 @@
         return this.buildDataArray(this.chartData, this.sectionKeys)
       },
       pie() {
-        return d3.pie().value((d) => d.value).startAngle(this.startAngle).endAngle(this.endAngle)
+        return d3pie().value((d) => d.value).startAngle(this.startAngle).endAngle(this.endAngle)
           .padAngle(this.padAngle).sortValues(null)
       },
       arc() {
-        return d3.arc().outerRadius(this.outerRadius).innerRadius(this.innerRadius)
+        return d3arc().outerRadius(this.outerRadius).innerRadius(this.innerRadius)
       },
       expandedArc() {
-        return d3.arc().outerRadius(this.outerRadius / (1 - this.selectedSectionIncreasePercent)).innerRadius(this.innerRadius)
+        return d3arc().outerRadius(this.outerRadius / (1 - this.selectedSectionIncreasePercent)).innerRadius(this.innerRadius)
       },
       actualWidth() {
         return Math.max(this.width - this.legendSize.width, this.chartWidth)
@@ -220,12 +224,12 @@
     },
     methods: {
       updateWidth() {
-        var node = d3.select('div#' + this.id + '-wrapper').node()
+        var node = d3select('div#' + this.id + '-wrapper').node()
         if (!node) return
         var divSize = node.getBoundingClientRect()
         var legendSize = { width: 0 }
         if (['left','right'].includes(this.legendLocation)){
-          legendSize = d3.select('div#' + this.id + '-legend').node().getBoundingClientRect()
+          legendSize = d3select('div#' + this.id + '-legend').node().getBoundingClientRect()
           this.legendSize.width = legendSize.width
         } else this.legendSize.width = 0
         this.chartWidth = divSize.width - legendSize.width
@@ -307,11 +311,11 @@
       },
       defaultSelectColor(_,id) {
         var i = this.dataArray.findIndex(e => e.id == id)
-        return d3.schemeCategory10[i % 10]
+        return d3schemeCategory10[i % 10]
       },
       drawLegend() {
-        d3.select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item').remove()
-        d3.select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item')
+        d3select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item').remove()
+        d3select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item')
           .data(this.dataArray)
           .enter().append('div')
             .classed('vue-pie-legend-item', true)
@@ -349,7 +353,7 @@
           
         paths.transition().duration(this.transitionDuration)
           .attrTween('d', function (a) {
-            var i = d3.interpolate(this._current, a)
+            var i = d3interpolate(this._current, a)
             this._current = i(0)
             return function(t) {
               return arc(i(t))
@@ -369,7 +373,7 @@
               return this.arc(d)
             }).bind(this))
 
-        d3.select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item')
+        d3select('#' + this.id + '-legend').selectAll('div.vue-pie-legend-item')
           .classed('vue-pie-clickable', this.canClick)
           .classed('vue-pie-faded', ((d,i) => {
             if (i == hoverInd || this.clickedIndices.includes(d.data.id)) return false

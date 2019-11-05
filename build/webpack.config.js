@@ -7,7 +7,7 @@ var commonConfig = {
   output: {
     filename: 'vue-pie.min.js',
     libraryTarget: 'umd',
-    library: 'VuePie'
+    library: 'VPie'
   },
   mode: 'production',
   module: {
